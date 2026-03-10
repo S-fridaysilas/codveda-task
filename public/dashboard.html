@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+  <div class="navbar">
+    <h2>🚀 Codveda App</h2>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <div class="dashboard-content">
+    <div class="welcome-card">
+      <h2 id="welcome-msg">Welcome!</h2>
+      <p id="role-msg"></p>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card" onclick="window.location.href='chat.html'">
+        <div class="icon">💬</div>
+        <h3>Live Chat</h3>
+        <p>Chat with other users in real time</p>
+      </div>
+      <div class="card" id="admin-card" style="display:none"
+        onclick="window.location.href='admin.html'">
+        <div class="icon">⚙️</div>
+        <h3>Admin Panel</h3>
+        <p>Manage users and settings</p>
+      </div>
+      <div class="card">
+        <div class="icon">👤</div>
+        <h3>My Profile</h3>
+        <p>View and edit your profile</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (!token || !user) {
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('welcome-msg').textContent = `Welcome, ${user.name}!`;
+    document.getElementById('role-msg').textContent = `You are logged in as ${user.role}`;
+
+    if (user.role === 'admin') {
+      document.getElementById('admin-card').style.display = 'block';
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

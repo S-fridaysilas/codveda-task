@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Chat</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="chat-body">
+  <div class="chat-container">
+    <div class="chat-sidebar">
+      <h3>🟢 Online Users</h3>
+      <div id="online-users"></div>
+    </div>
+    <div class="chat-main">
+      <div class="chat-header">
+        <span>💬 Live Chat Room</span>
+        <button onclick="window.location.href='dashboard.html'"
+          style="width:auto; padding:8px 16px; font-size:13px;">
+          Back to Dashboard
+        </button>
+      </div>
+      <div class="chat-messages" id="messages"></div>
+      <div class="chat-input">
+        <input type="text" id="messageInput"
+          placeholder="Type your message..."
+          onkeypress="if(event.key==='Enter') sendMessage()" />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (!token || !user) {
+      window.location.href = 'login.html';
+    }
+
+    const socket = io({ auth: { token } });
+
+    socket.emit('userJoined', user.name);
+
+    socket.on('message', (data) => {
+      const messages = document.getElementById('messages');
+      const div = document.createElement('div');
+      const isSent = data.sender === user.name;
+      div.className = `message ${isSent ? 'sent' : 'received'}`;
+      div.innerHTML = `
+        <div class="sender">${data.sender}</div>
+        <div>${data.text}</div>
+      `;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    socket.on('onlineUsers', (users) => {
+      const onlineDiv = document.getElementById('online-users');
+      onlineDiv.innerHTML = users.map(u =>
+        `<div class="online-user">👤 ${u}</div>`
+      ).join('');
+    });
+
+    socket.on('notification', (msg) => {
+      const messages = document.getElementById('messages');
+      const div = document.createElement('div');
+      div.style.cssText = 'text-align:center; color:#666; font-size:13px; padding:8px;';
+      div.textContent = msg;
+      messages.appendChild(div);
+    });
+
+    function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      if (!text) return;
+      socket.emit('sendMessage', { sender: user.name, text });
+      input.value = '';
+    }
+  </script>
+</body>
+</html>
